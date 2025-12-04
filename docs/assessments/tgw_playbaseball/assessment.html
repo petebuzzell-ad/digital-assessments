@@ -650,7 +650,8 @@
 <h2>Summary</h2>
 <ul>
 <li>GA4: Implemented on all sites. Modern sites share single property (cross-domain tracking)</li>
-<li>GTM: Present on all sites (Container ID not globally exposed)</li>
+<li>GTM: Active on all sites with separate container IDs</li>
+<li>Meta Pixel: Active on all sites with separate pixel IDs</li>
 <li>DataLayer: Modern platform uses cleaner event schema (<code>view_page</code>, <code>view_item</code>)</li>
 </ul>
 <blockquote>
@@ -675,16 +676,16 @@ PLA spend surge (Mar-Aug 2025) drove lower-quality traffic, explaining conversio
 <td style="text-align: left;"><code>G-1GL9G327L8</code></td>
 </tr>
 <tr>
-<td style="text-align: left;"><strong>GTM Status</strong></td>
-<td style="text-align: left;">✅ Active (Hidden ID)</td>
-<td style="text-align: left;">✅ Active (Hidden ID)</td>
-<td style="text-align: left;">✅ Active (Hidden ID)</td>
+<td style="text-align: left;"><strong>GTM Container</strong></td>
+<td style="text-align: left;"><code>DC-4953838</code></td>
+<td style="text-align: left;"><code>DC-4954029</code></td>
+<td style="text-align: left;"><code>DC-4954029</code> (assumed)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Meta Pixel</strong></td>
-<td style="text-align: left;">⚠️ Not Detected via <code>fbq</code></td>
-<td style="text-align: left;">⚠️ Not Detected via <code>fbq</code></td>
-<td style="text-align: left;">⚠️ Not Detected via <code>fbq</code></td>
+<td style="text-align: left;"><code>1514576802145700</code></td>
+<td style="text-align: left;"><code>296741824068964</code></td>
+<td style="text-align: left;"><code>296741824068964</code> (assumed)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Cross-Domain</strong></td>
@@ -698,7 +699,7 @@ PLA spend surge (Mar-Aug 2025) drove lower-quality traffic, explaining conversio
 <h3>1. Home Page</h3>
 <ul>
 <li><strong>Legacy</strong>: Fires standard <code>page_view</code>.</li>
-<li><strong>Modern</strong>: Fires <code>page_view</code> AND a custom <code>view_page</code> event, likely used for specific SPA routing triggers.</li>
+<li><strong>Modern</strong>: Fires <code>page_view</code> AND a custom <code>view_page</code> event.</li>
 </ul>
 <h3>2. Product Listing Page (PLP)</h3>
 <ul>
@@ -722,7 +723,7 @@ PLA spend surge (Mar-Aug 2025) drove lower-quality traffic, explaining conversio
 <h3>Modern Platform Advantages</h3>
 <ol>
 <li>Unified tracking: shared GA4 property enables cross-storefront user journey tracking</li>
-<li>Custom events: <code>view_page</code> handles SPA routing</li>
+<li>Custom events: <code>view_page</code> provides additional page view tracking</li>
 </ol>
 <h3>Legacy Site Status</h3>
 <ol>
@@ -731,8 +732,8 @@ PLA spend surge (Mar-Aug 2025) drove lower-quality traffic, explaining conversio
 </ol>
 <h2>Recommendations</h2>
 <ol>
-<li>Verify Meta Pixel via network requests (<code>facebook.com/tr</code>)</li>
 <li>Implement <code>view_item_list</code> on PLP for impression-to-click CTR measurement</li>
+<li>Consider consolidating GTM containers if cross-domain tracking is needed</li>
 </ol>
 </section>
 <section id="04-security-audit" class="assessment-section">
@@ -1707,7 +1708,7 @@ Product Schema on <strong>playbaseball.com</strong> is SSR/embedded, ensuring AI
 
     <script>
         // Password Protection
-        const PASSWORD_HASH = 'aeb448b7755c097704094164f32e0921cf173d85d1c9a3204b6c3a545a36e5cf';
+        const PASSWORD_HASH = 'ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae';
         const AUTH_KEY = 'assessment_auth';
 
         async function hashPassword(password) {
@@ -1769,7 +1770,10 @@ Product Schema on <strong>playbaseball.com</strong> is SSR/embedded, ensuring AI
 
         function buildTOC() {
             const tocList = document.getElementById('tocList');
+            if (!tocList) return;
+            
             headings = Array.from(document.querySelectorAll('.main-content h1, .main-content h2, .main-content h3, .main-content h4, .main-content h5, .main-content h6'));
+            tocLinks = [];
             
             headings.forEach((heading, index) => {
                 // Generate anchor ID if not present
@@ -1809,6 +1813,8 @@ Product Schema on <strong>playbaseball.com</strong> is SSR/embedded, ensuring AI
         }
 
         function setupScrollHighlighting() {
+            if (!headings || headings.length === 0) return;
+            
             // Use Intersection Observer for better performance
             const observerOptions = {
                 root: null,
@@ -1820,22 +1826,26 @@ Product Schema on <strong>playbaseball.com</strong> is SSR/embedded, ensuring AI
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         // Remove active from all links
-                        tocLinks.forEach(item => {
-                            item.link.classList.remove('active');
-                        });
-                        
-                        // Add active to corresponding link
-                        const activeLink = tocLinks.find(item => item.heading.id === entry.target.id);
-                        if (activeLink) {
-                            activeLink.link.classList.add('active');
+                        if (tocLinks && tocLinks.length > 0) {
+                            tocLinks.forEach(item => {
+                                item.link.classList.remove('active');
+                            });
                             
-                            // Scroll TOC to show active item if needed
-                            const tocSidebar = document.querySelector('.toc-sidebar');
-                            const linkRect = activeLink.link.getBoundingClientRect();
-                            const sidebarRect = tocSidebar.getBoundingClientRect();
-                            
-                            if (linkRect.top < sidebarRect.top || linkRect.bottom > sidebarRect.bottom) {
-                                activeLink.link.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                            // Add active to corresponding link
+                            const activeLink = tocLinks.find(item => item.heading.id === entry.target.id);
+                            if (activeLink) {
+                                activeLink.link.classList.add('active');
+                                
+                                // Scroll TOC to show active item if needed
+                                const tocSidebar = document.querySelector('.toc-sidebar');
+                                if (tocSidebar) {
+                                    const linkRect = activeLink.link.getBoundingClientRect();
+                                    const sidebarRect = tocSidebar.getBoundingClientRect();
+                                    
+                                    if (linkRect.top < sidebarRect.top || linkRect.bottom > sidebarRect.bottom) {
+                                        activeLink.link.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                                    }
+                                }
                             }
                         }
                     }
@@ -1858,6 +1868,8 @@ Product Schema on <strong>playbaseball.com</strong> is SSR/embedded, ensuring AI
         }
 
         function updateActiveTOC() {
+            if (!headings || headings.length === 0) return;
+            
             const scrollPosition = window.scrollY + 150; // Offset for header
             
             let activeHeading = null;
@@ -1872,14 +1884,16 @@ Product Schema on <strong>playbaseball.com</strong> is SSR/embedded, ensuring AI
             }
 
             // Update active state
-            tocLinks.forEach(item => {
-                item.link.classList.remove('active');
-            });
+            if (tocLinks && tocLinks.length > 0) {
+                tocLinks.forEach(item => {
+                    item.link.classList.remove('active');
+                });
 
-            if (activeHeading) {
-                const activeLink = tocLinks.find(item => item.heading.id === activeHeading.id);
-                if (activeLink) {
-                    activeLink.link.classList.add('active');
+                if (activeHeading) {
+                    const activeLink = tocLinks.find(item => item.heading.id === activeHeading.id);
+                    if (activeLink) {
+                        activeLink.link.classList.add('active');
+                    }
                 }
             }
         }
