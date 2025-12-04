@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Assessment: TGW & PlayBaseball</title>
+    <style>
+        /* Arcadia Digital Brand Colors */
+        :root {
+            --arcadia-green: #2d5016;
+            --arcadia-green-light: #4a7c2a;
+            --arcadia-green-dark: #1a3009;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --border-color: #e0e0e0;
+            --highlight: #fff9c4;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Fonts - Piazzolla/Figtree with fallbacks */
+        @import url('https://fonts.googleapis.com/css2?family=Piazzolla:ital,wght@0,400;0,500;0,700;1,400&family=Figtree:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            font-size: 16px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Piazzolla', Georgia, serif;
+            font-weight: 700;
+            margin-top: 2em;
+            margin-bottom: 1em;
+            color: var(--arcadia-green-dark);
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            border-bottom: 3px solid var(--arcadia-green);
+            padding-bottom: 0.5em;
+        }
+
+        h2 {
+            font-size: 2em;
+            border-bottom: 2px solid var(--arcadia-green-light);
+            padding-bottom: 0.3em;
+        }
+
+        h3 {
+            font-size: 1.5em;
+        }
+
+        h4 {
+            font-size: 1.25em;
+        }
+
+        /* Password Modal */
+        .password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+
+        .password-modal {
+            background: white;
+            padding: 3em;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .password-modal h2 {
+            font-size: 1.5em;
+            margin-top: 0;
+            margin-bottom: 1em;
+            border: none;
+            padding: 0;
+            color: var(--arcadia-green);
+        }
+
+        .password-modal input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 1em;
+            font-family: inherit;
+        }
+
+        .password-modal input:focus {
+            outline: none;
+            border-color: var(--arcadia-green);
+        }
+
+        .password-modal button {
+            background: var(--arcadia-green);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .password-modal button:hover {
+            background: var(--arcadia-green-light);
+        }
+
+        .password-error {
+            color: #d32f2f;
+            margin-top: 0.5em;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            background: white;
+            border-bottom: 2px solid var(--arcadia-green);
+            padding: 1em 2em;
+            z-index: 1000;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            margin: 0;
+            border: none;
+            padding: 0;
+        }
+
+        /* Table of Contents */
+        .toc-sidebar {
+            position: fixed;
+            left: 0;
+            top: 80px;
+            width: 250px;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5em 1em;
+            z-index: 100;
+        }
+
+        .toc-title {
+            font-family: 'Piazzolla', serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--arcadia-green);
+            margin-bottom: 1em;
+            padding-bottom: 0.5em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-item {
+            margin-bottom: 0.5em;
+        }
+
+        .toc-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: block;
+            padding: 0.4em 0.6em;
+            border-radius: 4px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+
+        .toc-link:hover {
+            background: var(--arcadia-green-light);
+            color: white;
+        }
+
+        .toc-link.active {
+            background: rgba(45, 80, 22, 0.1);
+            border-left-color: var(--arcadia-green);
+            color: var(--arcadia-green-dark);
+            font-weight: 600;
+        }
+
+        .toc-item.level-1 .toc-link {
+            font-weight: 600;
+            padding-left: 0.6em;
+        }
+
+        .toc-item.level-2 .toc-link {
+            padding-left: 1.2em;
+            font-size: 0.85em;
+        }
+
+        .toc-item.level-3 .toc-link {
+            padding-left: 1.8em;
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+
+        .toc-item.level-3 .toc-link.active {
+            color: var(--arcadia-green-dark);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 2em 3em;
+            max-width: 1200px;
+        }
+
+        .assessment-section {
+            margin-bottom: 4em;
+        }
+
+
+        /* Typography */
+        p {
+            margin-bottom: 1.2em;
+        }
+
+        ul, ol {
+            margin-bottom: 1.2em;
+            padding-left: 2em;
+        }
+
+        li {
+            margin-bottom: 0.5em;
+        }
+
+        blockquote {
+            border-left: 4px solid var(--arcadia-green);
+            padding-left: 1.5em;
+            margin: 1.5em 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        code {
+            background: var(--bg-secondary);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: var(--bg-secondary);
+            padding: 1.5em;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 1.5em 0;
+            border-left: 4px solid var(--arcadia-green);
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        th {
+            background: var(--arcadia-green);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        tr:hover {
+            background: #f0f0f0;
+        }
+
+        /* Images */
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px var(--shadow);
+            margin: 1.5em 0;
+        }
+
+        /* Links */
+        a {
+            color: var(--arcadia-green);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        a:hover {
+            border-bottom-color: var(--arcadia-green);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1.5em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            h2 {
+                font-size: 1.5em;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .password-overlay,
+            .password-modal,
+            .header,
+            .toc-sidebar {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 0;
+            }
+
+            body {
+                font-size: 12pt;
+            }
+
+            h1, h2, h3 {
+                page-break-after: avoid;
+            }
+
+            .assessment-section {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Hidden content until authenticated */
+        body.locked .main-content,
+        body.locked .header,
+        body.locked .toc-sidebar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="locked">
+    <!-- Password Modal -->
+    <div class="password-overlay" id="passwordOverlay">
+        <div class="password-modal">
+            <h2>Assessment Document</h2>
+            <p style="margin-bottom: 1.5em; color: var(--text-secondary);">Password required</p>
+            <input type="password" id="passwordInput" placeholder="Enter password" autofocus>
+            <div class="password-error" id="passwordError">Incorrect password</div>
+            <button onclick="checkPassword()">Access</button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1>Digital Assessment</h1>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="toc-sidebar">
+        <div class="toc-title">Contents</div>
+        <ul class="toc-list" id="tocList"></ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <section id="00-executive-summary" class="assessment-section">
+<h1>Digital Assessment: TGW &amp; PlayBaseball</h1>
+<h2>Executive Summary</h2>
+<p><strong>playbaseball.com</strong> successfully replatformed to CommerceTools (headless backend), eliminating legacy WebSphere constraints. Frontend execution limits ROI: search discovery, SEO fundamentals, and competitive speed lag.</p>
+<p><strong>Verdict</strong>: Replatforming complete. Shift focus from engineering to experience optimization.</p>
+<h2>Context</h2>
+<ul>
+<li>Sales down 40-60% YoY</li>
+<li>ROAS floor reached - traffic growth yields diminishing returns</li>
+<li><strong>2% Cart-to-Checkout conversion drop</strong> (June/July 2025)</li>
+<li>Policy: No optimization on legacy (<strong>tgw.com</strong>)</li>
+</ul>
+<hr />
+<h2>TGW.com (Legacy)</h2>
+<p><strong>Role</strong>: Benchmark / Cash Cow | <strong>Status</strong>: Maintenance Mode</p>
+<p>Technically obsolete but functionally rich. Performance floor, feature maturity ceiling.</p>
+<h3>Key Insights</h3>
+<ul>
+<li><strong>3x slower</strong> than market leader (3.4s vs 1.2s LCP)</li>
+<li>SEO maturity: proper sitemap, alt text, baseline organic visibility</li>
+<li>Functional search/navigation (functional parity target)</li>
+</ul>
+<hr />
+<h2>PlayBaseball.com (Modern)</h2>
+<p><strong>Role</strong>: Growth Engine | <strong>Status</strong>: Active Development</p>
+<p>Modern architecture, underperforming due to execution gaps.</p>
+<h3>Assets</h3>
+<ul>
+<li>Unified architecture: multi-site shared GA4 property and cart</li>
+<li>Real-world stability: CLS 0.00 (CrUX data)</li>
+<li>Accessibility: 89/100 foundation</li>
+</ul>
+<h3>Critical Execution Gaps</h3>
+<ul>
+<li><strong>Speed</strong>: 2.1s LCP slower than all competitors (Better Baseball ~1.8s)</li>
+<li><strong>Search</strong>: Basic Algolia text-only vs. competitors' rich autosuggest (visuals + categories)</li>
+<li><strong>SEO</strong>: Missing alt text on trust signals, non-standard sitemap (invisible to crawlers)</li>
+<li><strong>Mobile</strong>: Desktop-first UX, small touch targets, sluggish navigation</li>
+</ul>
+<hr />
+<h2>Investment Priorities</h2>
+<h3>1. TGW.com: Revenue Protection (Policy Exception)</h3>
+<ul>
+<li><strong>Guest Checkout hotfix</strong>: Address 2% conversion drop (June/July)<ul>
+<li>Resolve color conflict (Free Shipping messages vs. checkout buttons)</li>
+<li>Elevate Guest Checkout path visibility</li>
+<li>High-ROI repair, not feature optimization</li>
+</ul>
+</li>
+</ul>
+<h3>2. PlayBaseball.com: Growth</h3>
+<ul>
+<li><strong>SEO basics (immediate)</strong>: Generate XML sitemap, automate alt text</li>
+<li><strong>Search upgrade (months)</strong>: Rich autosuggest UI for Algolia</li>
+<li><strong>Mobile polish (months)</strong>: Match Dick's app-like navigation</li>
+</ul>
+<h3>3. Risk Mitigation (Quarters)</h3>
+<ul>
+<li><strong>Frontend modernization</strong>: Migrate from AngularJS 1.8.2 (EOL, security risk) to modern framework</li>
+</ul>
+<h2>Assessment Scope</h2>
+<p>Full e-commerce funnel across 11 documents:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Document</th>
+<th style="text-align: left;">Focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="01_platform_architecture.md">01_platform_architecture.md</a></td>
+<td style="text-align: left;">CommerceTools backend + ASP.NET MVC frontend</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="02_ux_audit.md">02_ux_audit.md</a></td>
+<td style="text-align: left;">Browsing, search, checkout flows</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="03_analytics_audit.md">03_analytics_audit.md</a></td>
+<td style="text-align: left;">GA4, GTM, DataLayer</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="04_security_audit.md">04_security_audit.md</a></td>
+<td style="text-align: left;">AngularJS 1.8.2 EOL risk</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="05_capabilities_inventory.md">05_capabilities_inventory.md</a></td>
+<td style="text-align: left;">Feature parity check</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="06_performance_accessibility_audit.md">06_performance_accessibility_audit.md</a></td>
+<td style="text-align: left;">Lab vs. field performance, accessibility</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="07_seo_audit.md">07_seo_audit.md</a></td>
+<td style="text-align: left;">Search visibility</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="08_geo_audit.md">08_geo_audit.md</a></td>
+<td style="text-align: left;">Generative Engine Optimization</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="09_system_inventory.md">09_system_inventory.md</a></td>
+<td style="text-align: left;">Stack map (Algolia confirmed)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="10_mobile_audit.md">10_mobile_audit.md</a></td>
+<td style="text-align: left;">Mobile UX review</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="11_competitor_benchmark.md">11_competitor_benchmark.md</a></td>
+<td style="text-align: left;">vs. Dick's, Golf Galaxy, others</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="01-platform-architecture" class="assessment-section">
+<h1>Platform Architecture Comparison</h1>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">tgw.com (Legacy Reference)</th>
+<th style="text-align: left;">playbaseball.com (Replatformed)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Platform Indicators</strong></td>
+<td style="text-align: left;"><strong>IBM WebSphere Commerce</strong><br>(<code>WC_SESSION_ESTABLISHED</code>, <code>WC_ACTIVEPOINTER</code> cookies)</td>
+<td style="text-align: left;"><strong>CommerceTools (Headless)</strong><br>(Confirmed via architecture diagram. No legacy cookies.)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Frontend Framework</strong></td>
+<td style="text-align: left;"><strong>Dojo</strong> + <strong>jQuery 2.1.1</strong></td>
+<td style="text-align: left;"><strong>AngularJS 1.8.2</strong> + <strong>jQuery 3.5.1</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Visual Design</strong></td>
+<td style="text-align: left;">Identical Layout &amp; Structure</td>
+<td style="text-align: left;">Identical Layout &amp; Structure</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Architecture</strong></td>
+<td style="text-align: left;">Monolithic (WebSphere)</td>
+<td style="text-align: left;"><strong>Composable / MACH</strong><br>(CommerceTools Backend + Custom .NET Head)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Session Cookies</strong></td>
+<td style="text-align: left;"><code>WC_...</code> (WebSphere)</td>
+<td style="text-align: left;"><code>osano_...</code>, <code>rxVisitor...</code> (No standard platform session cookie visible)</td>
+</tr>
+</tbody>
+</table>
+<h2>Detailed Findings</h2>
+<h3>1. Legacy Baseline: tgw.com</h3>
+<ul>
+<li>Platform: IBM WebSphere Commerce (confirmed via <code>WC_</code> cookies)</li>
+<li>Tech Stack: Dojo + jQuery 2.1.1</li>
+</ul>
+<h3>2. Replatformed Site: playbaseball.com</h3>
+<ul>
+<li>Platform: CommerceTools (headless backend)</li>
+<li>Implementation: "Strangler Fig" approach - frontend ported to ASP.NET MVC (<code>TsgMvc</code>) as API consumer</li>
+<li>Tech Stack: AngularJS 1.8.2 frontend, CommerceTools backend</li>
+<li>Key Difference: No WebSphere cookies despite identical look/feel</li>
+</ul>
+<h2>Architecture Diagram Analysis</h2>
+<ul>
+<li>Backend: CommerceTools (headless, API-driven)</li>
+<li>Multi-site: Shared cart between <strong>playbaseball.com</strong> and <strong>playsoftball.playbaseball.com</strong> (single CommerceTools project)</li>
+<li>Frontend: AngularJS 1.8.2 (outdated)</li>
+<li>Integration: Server-side proxy (BFF pattern) secures API keys</li>
+</ul>
+<h2>Technical Deep Dive</h2>
+<h3>1. Frontend Architecture</h3>
+<ul>
+<li>Framework: AngularJS 1.8.2 (EOL, security risk)</li>
+<li>Library: jQuery 3.5.1</li>
+<li>Rendering: Client-Side Rendering (CSR) - minimal semantic HTML, heavy JS injection</li>
+</ul>
+<h3>2. Backend &amp; API</h3>
+<ul>
+<li>Platform: CommerceTools (headless)</li>
+<li>Integration: Server-side proxy (BFF) - no direct API calls visible, secures API keys</li>
+<li>Session: TGW uses WebSphere cookies; PlayBaseball uses stateless/token-based (no monolithic session cookie)</li>
+</ul>
+<h3>3. Infrastructure</h3>
+<ul>
+<li>CDN: Cloudflare</li>
+<li>Hosting: Likely Azure (ASP.NET MVC stack)</li>
+</ul>
+<h2>Conclusion</h2>
+<p><strong>playbaseball.com</strong> successfully migrated to CommerceTools while preserving legacy UI. Frontend remains technically "legacy" (AngularJS 1.8.2) despite modern backend.</p>
+</section>
+<section id="02-ux-audit" class="assessment-section">
+<h1>UX Audit: TGW Checkout</h1>
+<h2>Cart &amp; Checkout Assessment (tgw.com)</h2>
+<ul>
+<li>Full page reloads on every action (Add to Cart, View Cart, Guest Checkout)</li>
+<li>Multi-page flow (Cart -&gt; Billing -&gt; Shipping -&gt; Payment)</li>
+<li><strong>2% drop in Cart-to-Checkout conversion</strong> (June/July 2025) correlates with friction points below</li>
+</ul>
+<h2>Critical Friction Points</h2>
+<h3>1. Checkout Entry Friction</h3>
+<p>Three competing paths create high cognitive load:<br />
+*   New &amp; Guest Checkout<br />
+*   Sign In &amp; Checkout<br />
+*   PayPal Checkout</p>
+<h3>2. Visual Hierarchy &amp; Color Conflict</h3>
+<p>Threshold messages use same color as checkout CTAs, reducing button prominence.</p>
+<h3>3. Non-Standard Flow (Billing First)</h3>
+<p>Asks for billing before shipping, deviating from standard practice and preventing early shipping cost calculation.</p>
+<h2>Browsing Experience</h2>
+<h3>1. Product Discovery (PLP)</h3>
+<ul>
+<li>Modern: Faceted search with autosuggest, 5x faster load (5.9s vs 31s)</li>
+<li>Legacy: No autosuggest, slow load times</li>
+</ul>
+<h3>2. Product Details (PDP)</h3>
+<ul>
+<li>Modern: Clean layout, clear CTAs, stock status implied</li>
+<li>Legacy: Explicit stock messaging, but cluttered and slow</li>
+</ul>
+</section>
+<section id="03-analytics-audit" class="assessment-section">
+<h1>Analytics &amp; Tracking Audit</h1>
+<h2>Summary</h2>
+<ul>
+<li>GA4: Implemented on all sites. Modern sites share single property (cross-domain tracking)</li>
+<li>GTM: Present on all sites (Container ID not globally exposed)</li>
+<li>DataLayer: Modern platform uses cleaner event schema (<code>view_page</code>, <code>view_item</code>)</li>
+</ul>
+<blockquote>
+<p>[!NOTE]<br />
+PLA spend surge (Mar-Aug 2025) drove lower-quality traffic, explaining conversion rate decline.</p>
+</blockquote>
+<h2>Comparative Matrix</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">tgw.com (Legacy)</th>
+<th style="text-align: left;">playbaseball.com (Modern)</th>
+<th style="text-align: left;">playsoftball... (Modern)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>GA4 Property</strong></td>
+<td style="text-align: left;"><code>G-G4ZQ9EYW9R</code></td>
+<td style="text-align: left;"><code>G-1GL9G327L8</code></td>
+<td style="text-align: left;"><code>G-1GL9G327L8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>GTM Status</strong></td>
+<td style="text-align: left;">✅ Active (Hidden ID)</td>
+<td style="text-align: left;">✅ Active (Hidden ID)</td>
+<td style="text-align: left;">✅ Active (Hidden ID)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Meta Pixel</strong></td>
+<td style="text-align: left;">⚠️ Not Detected via <code>fbq</code></td>
+<td style="text-align: left;">⚠️ Not Detected via <code>fbq</code></td>
+<td style="text-align: left;">⚠️ Not Detected via <code>fbq</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Cross-Domain</strong></td>
+<td style="text-align: left;">❌ Isolated</td>
+<td style="text-align: left;">✅ <strong>Shared Property</strong></td>
+<td style="text-align: left;">✅ <strong>Shared Property</strong></td>
+</tr>
+</tbody>
+</table>
+<h2>Detailed Event Analysis</h2>
+<h3>1. Home Page</h3>
+<ul>
+<li><strong>Legacy</strong>: Fires standard <code>page_view</code>.</li>
+<li><strong>Modern</strong>: Fires <code>page_view</code> AND a custom <code>view_page</code> event, likely used for specific SPA routing triggers.</li>
+</ul>
+<h3>2. Product Listing Page (PLP)</h3>
+<ul>
+<li><strong>Legacy</strong>: Standard <code>page_view</code>. No specific <code>view_item_list</code> event detected in the initial load.</li>
+<li><strong>Modern</strong>: Standard <code>page_view</code> + <code>view_page</code>. No <code>view_item_list</code> detected in initial load (likely fires on scroll or interaction).</li>
+</ul>
+<h3>3. Product Detail Page (PDP)</h3>
+<ul>
+<li><strong>Legacy</strong>:<ul>
+<li>Events: <code>view_item</code>, <code>page_view</code>.</li>
+<li>Data Structure: Basic product data.</li>
+</ul>
+</li>
+<li><strong>Modern</strong>:<ul>
+<li>Events: <code>view_item</code>, <code>page_view</code>, <code>view_page</code>.</li>
+<li>Data Structure: Consistent with GA4 e-commerce standards.</li>
+</ul>
+</li>
+</ul>
+<h2>Key Findings</h2>
+<h3>Modern Platform Advantages</h3>
+<ol>
+<li>Unified tracking: shared GA4 property enables cross-storefront user journey tracking</li>
+<li>Custom events: <code>view_page</code> handles SPA routing</li>
+</ol>
+<h3>Legacy Site Status</h3>
+<ol>
+<li>Isolated data: separate GA4 property, siloed from modern stack</li>
+<li>Basic implementation: functional DataLayer but lacks custom events</li>
+</ol>
+<h2>Recommendations</h2>
+<ol>
+<li>Verify Meta Pixel via network requests (<code>facebook.com/tr</code>)</li>
+<li>Implement <code>view_item_list</code> on PLP for impression-to-click CTR measurement</li>
+</ol>
+</section>
+<section id="04-security-audit" class="assessment-section">
+<h1>Security Audit: AngularJS (playbaseball.com)</h1>
+<h2>Security Risk Assessment</h2>
+<p>Frontend uses AngularJS 1.8.2 (EOL Dec 31, 2021) on modern CommerceTools backend.</p>
+<h3>Critical Vulnerabilities (Post-EOL)</h3>
+<ul>
+<li>CVE-2024-8372 &amp; CVE-2024-8373: Content Spoofing via <code>srcset</code> sanitization</li>
+<li>CVE-2023-26117 &amp; CVE-2023-26116: ReDoS in <code>$resource</code> and <code>angular.copy()</code></li>
+<li>CVE-2022-25869: XSS vulnerability</li>
+</ul>
+<h3>Risk Implication</h3>
+<ul>
+<li>High risk: EOL framework on e-commerce payment site</li>
+<li>May violate PCI-DSS patching requirements</li>
+<li>No LTS provider signatures detected (HeroDevs, XLTS, OpenLogic)</li>
+<li><strong>Recommendations</strong>:<ol>
+<li>Verify LTS fork usage; if not, site is vulnerable</li>
+<li>Plan migration to modern framework (React, Vue, Angular 2+)</li>
+</ol>
+</li>
+</ul>
+</section>
+<section id="05-capabilities-inventory" class="assessment-section">
+<h1>Ecommerce Capabilities Inventory</h1>
+<h2>Feature Comparison Matrix</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature Category</th>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">tgw.com (Legacy)</th>
+<th style="text-align: left;">playbaseball.com (Modern)</th>
+<th style="text-align: left;">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Search</strong></td>
+<td style="text-align: left;"><strong>Autosuggest / Typeahead</strong></td>
+<td style="text-align: left;">❌ No</td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;"><strong>playbaseball.com</strong> offers instant product suggestions while typing.</td>
+</tr>
+<tr>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><strong>Search Results Page</strong></td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">Both sites support grid views.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Catalog (PLP)</strong></td>
+<td style="text-align: left;"><strong>Faceted Filtering</strong></td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">Both support standard filters (Brand, Price, etc.).</td>
+</tr>
+<tr>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><strong>Sorting</strong></td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">Standard sorting options available on both.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Product (PDP)</strong></td>
+<td style="text-align: left;"><strong>Reviews / Ratings</strong></td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">Both display star ratings and review counts.</td>
+</tr>
+<tr>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><strong>Image Zoom</strong></td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">Both support click-to-zoom.</td>
+</tr>
+<tr>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><strong>Stock Status</strong></td>
+<td style="text-align: left;">✅ Yes ("In Stock")</td>
+<td style="text-align: left;">✅ Yes (Implied)</td>
+<td style="text-align: left;"><strong>tgw.com</strong> is more explicit with "In Stock" messaging.</td>
+</tr>
+<tr>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><strong>Wishlist</strong></td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">Both support saving items for later.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Multi-site</strong></td>
+<td style="text-align: left;"><strong>Shared Cart</strong></td>
+<td style="text-align: left;">❌ No</td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;"><strong>playbaseball.com</strong> shares cart with <code>playsoftball.playbaseball.com</code>. "ALL BALL. ONE CART." messaging.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Account</strong></td>
+<td style="text-align: left;"><strong>Sign In / Register</strong></td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">Standard account management.</td>
+</tr>
+<tr>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><strong>Order Tracking</strong></td>
+<td style="text-align: left;">✅ Yes (Footer)</td>
+<td style="text-align: left;">⚠️ Hidden</td>
+<td style="text-align: left;"><strong>tgw.com</strong> has a clear "Order Status" link in the footer. <strong>playbaseball.com</strong> likely buries this in "Customer Service" or requires login.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Marketing</strong></td>
+<td style="text-align: left;"><strong>Email Signup</strong></td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">Both have footer signup forms.</td>
+</tr>
+</tbody>
+</table>
+<h2>Key Observations</h2>
+<ol>
+<li><strong>playbaseball.com</strong> has autosuggest search</li>
+<li><strong>tgw.com</strong> provides clearer stock status messaging</li>
+<li><strong>tgw.com</strong> has more accessible order tracking (footer link)</li>
+<li><strong>playbaseball.com</strong> has shared cart across multi-site architecture</li>
+</ol>
+</section>
+<section id="06-performance-accessibility-audit" class="assessment-section">
+<h1>Performance &amp; Accessibility Audit</h1>
+<h2>Summary</h2>
+<p>Lab tests show slow legacy load times (&gt;30s), but CrUX data shows real users experience ~2.4s. <strong>playbaseball.com</strong> outperforms legacy in both lab (PLP 5x faster) and field metrics (85% vs 78% Good LCP). Accessibility consistently better on modern platform.</p>
+<h2>Comparative Analysis</h2>
+<h3>1. Performance (Lab Data)</h3>
+<p><em>Out of 100</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Metric</th>
+<th style="text-align: left;">Page</th>
+<th style="text-align: left;">tgw.com (Legacy)</th>
+<th style="text-align: left;">playbaseball.com (Modern)</th>
+<th style="text-align: left;">Delta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Overall Score</strong></td>
+<td style="text-align: left;">Home</td>
+<td style="text-align: left;"><strong>27</strong></td>
+<td style="text-align: left;"><strong>25</strong></td>
+<td style="text-align: left;">🔻 -2</td>
+</tr>
+<tr>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">PLP</td>
+<td style="text-align: left;"><strong>26</strong></td>
+<td style="text-align: left;"><strong>36</strong></td>
+<td style="text-align: left;">✅ +10</td>
+</tr>
+<tr>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">PDP</td>
+<td style="text-align: left;"><strong>27</strong></td>
+<td style="text-align: left;"><strong>29</strong></td>
+<td style="text-align: left;">✅ +2</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>LCP (Load)</strong></td>
+<td style="text-align: left;">Home</td>
+<td style="text-align: left;">35.7s</td>
+<td style="text-align: left;">18.5s</td>
+<td style="text-align: left;">✅ 2x Faster</td>
+</tr>
+<tr>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">PLP</td>
+<td style="text-align: left;">31.0s</td>
+<td style="text-align: left;">5.9s</td>
+<td style="text-align: left;">✅ <strong>5x Faster</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">PDP</td>
+<td style="text-align: left;">34.5s</td>
+<td style="text-align: left;">20.8s</td>
+<td style="text-align: left;">✅ 40% Faster</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>TBT (Interactivity)</strong></td>
+<td style="text-align: left;">Home</td>
+<td style="text-align: left;">5,260ms</td>
+<td style="text-align: left;">3,910ms</td>
+<td style="text-align: left;">✅ 25% Better</td>
+</tr>
+<tr>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">PLP</td>
+<td style="text-align: left;">5,210ms</td>
+<td style="text-align: left;">1,200ms</td>
+<td style="text-align: left;">✅ <strong>77% Better</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">PDP</td>
+<td style="text-align: left;">3,020ms</td>
+<td style="text-align: left;">1,640ms</td>
+<td style="text-align: left;">✅ 45% Better</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>[!NOTE]<br />
+LCP measures loading (target: &lt;2.5s). TBT measures responsiveness (lower is better).</p>
+</blockquote>
+<h3>2. Field Data (CrUX)</h3>
+<p><em>Phone, Nov 2025</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Metric</th>
+<th style="text-align: left;">tgw.com (Legacy)</th>
+<th style="text-align: left;">playbaseball.com (Modern)</th>
+<th style="text-align: left;">Winner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>LCP (Load)</strong></td>
+<td style="text-align: left;">2.4s (78% Good)</td>
+<td style="text-align: left;"><strong>2.1s (85% Good)</strong></td>
+<td style="text-align: left;">✅ Modern (Slight Edge)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>INP (Interactivity)</strong></td>
+<td style="text-align: left;">175ms (88% Good)</td>
+<td style="text-align: left;"><strong>171ms (89% Good)</strong></td>
+<td style="text-align: left;">✅ Modern (Tie/Slight Edge)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>CLS (Stability)</strong></td>
+<td style="text-align: left;">0.00 (95% Good)</td>
+<td style="text-align: left;"><strong>0.00 (96% Good)</strong></td>
+<td style="text-align: left;">🤝 Tie (Excellent)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>[!IMPORTANT]<br />
+Lab vs Field discrepancy: Lab shows ~30s LCP, field shows ~2s. Lab simulates slow 4G and waits for network idle. Real users see content in 2.1-2.4s, but resource-heavy code drains battery/data.</p>
+</blockquote>
+<h3>3. Competitive Landscape (CrUX)</h3>
+<p><em>Mobile, Last 28 Days</em></p>
+<p><strong>Golf Vertical (PLP Speed)</strong><br />
+| Site                      | LCP (Load) | INP (Interactivity) | Status      |<br />
+| :------------------------ | :--------- | :------------------ | :---------- |<br />
+| <strong>Dick's Sporting Goods</strong> | <strong>1.2s</strong> 🚀 | 152ms               | 🟢 Excellent |<br />
+| <strong>Golf Galaxy</strong>           | 1.7s       | 195ms               | 🟢 Good      |<br />
+| <strong>Rock Bottom Golf</strong>      | 2.3s       | 145ms               | 🟡 Fair      |<br />
+| <strong>Worldwide Golf Shops</strong>  | 2.8s       | 120ms               | 🟡 Fair      |<br />
+| <strong>tgw.com (Legacy)</strong>      | <strong>3.4s</strong>   | 202ms               | 🔴 Lagging   |</p>
+<p><strong>Baseball Vertical (PLP Speed)</strong><br />
+| Site                 | LCP (Load) | INP (Interactivity) | Status |<br />
+| :------------------- | :--------- | :------------------ | :----- |<br />
+| <strong>Better Baseball</strong>  | <strong>2.0s</strong> 🟢 | 149ms               | 🟢 Good |<br />
+| <strong>playbaseball.com</strong> | 2.2s       | <strong>105ms</strong> 🚀         | 🟡 Fair |<br />
+| <strong>Baseball Monkey</strong>  | 3.1s       | 145ms               | 🔴 Poor |</p>
+<h4>Analysis</h4>
+<ul>
+<li>TGW is 3x slower than market leader (3.4s vs 1.2s)</li>
+<li><strong>playbaseball.com</strong> is competitive (2.2s) with best-in-class interactivity (105ms INP)</li>
+</ul>
+<h3>4. Accessibility</h3>
+<p><em>Out of 100</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Page</th>
+<th style="text-align: left;">tgw.com Score</th>
+<th style="text-align: left;">playbaseball.com Score</th>
+<th style="text-align: left;">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Home</strong></td>
+<td style="text-align: left;">82</td>
+<td style="text-align: left;"><strong>89</strong></td>
+<td style="text-align: left;">Modern site has better semantic structure.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PLP</strong></td>
+<td style="text-align: left;">78</td>
+<td style="text-align: left;"><strong>87</strong></td>
+<td style="text-align: left;">Significant improvement in listing pages.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PDP</strong></td>
+<td style="text-align: left;">81</td>
+<td style="text-align: left;"><strong>85</strong></td>
+<td style="text-align: left;">Consistent improvement across the funnel.</td>
+</tr>
+</tbody>
+</table>
+<h2>Key Findings</h2>
+<h3>Critical Issues</h3>
+<ol>
+<li>Legacy site: LCP &gt;30s in lab tests (render-blocking resources)</li>
+<li>Modern site: Fails Core Web Vitals (LCP 18.5s on Home), likely unoptimized images/large JS bundles</li>
+</ol>
+<h3>Improvements</h3>
+<ol>
+<li>PLP performance: 5x faster (5.9s vs 31.0s LCP), 77% better interactivity</li>
+<li>Accessibility: Consistently higher scores (better semantic HTML5)</li>
+</ol>
+<h2>Recommendations</h2>
+<ol>
+<li>Optimize images: size and lazy-load hero images/banners</li>
+<li>Code splitting: review AngularJS bundle, defer non-critical scripts</li>
+<li>Monitor CrUX: lab data can be pessimistic</li>
+</ol>
+</section>
+<section id="07-seo-audit" class="assessment-section">
+<h1>SEO Audit</h1>
+<h2>Summary</h2>
+<p><strong>tgw.com</strong> outperforms <strong>playbaseball.com</strong> in technical SEO (92 vs 77). Modern sites missing image alt text and XML sitemap. Meta tags and canonicals are valid.</p>
+<h2>Comparative Analysis</h2>
+<h3>1. Lighthouse SEO Scores</h3>
+<p><em>Out of 100</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Page Type</th>
+<th style="text-align: left;">tgw.com (Legacy)</th>
+<th style="text-align: left;">playbaseball.com (Modern)</th>
+<th style="text-align: left;">playsoftball... (Modern)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Home</strong></td>
+<td style="text-align: left;">🟢 <strong>92</strong></td>
+<td style="text-align: left;">🟠 77</td>
+<td style="text-align: left;">🟠 77</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PLP</strong></td>
+<td style="text-align: left;">🟢 <strong>92</strong></td>
+<td style="text-align: left;">🟠 77</td>
+<td style="text-align: left;">🟠 77</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PDP</strong></td>
+<td style="text-align: left;">🟢 <strong>92</strong></td>
+<td style="text-align: left;"><em>Failed</em></td>
+<td style="text-align: left;">🟠 77</td>
+</tr>
+</tbody>
+</table>
+<h3>2. Technical Checks</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">tgw.com</th>
+<th style="text-align: left;">playbaseball.com</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Robots.txt</strong></td>
+<td style="text-align: left;">✅ Valid (Standard)</td>
+<td style="text-align: left;">✅ Valid (Cloudflare)</td>
+<td style="text-align: left;">Both functional.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>XML Sitemap</strong></td>
+<td style="text-align: left;">✅ Present (<code>/sitemap.xml</code>)</td>
+<td style="text-align: left;">⚠️ <strong>Non-Standard</strong></td>
+<td style="text-align: left;">Found at custom path.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Meta Title</strong></td>
+<td style="text-align: left;">✅ Optimized</td>
+<td style="text-align: left;">✅ Optimized</td>
+<td style="text-align: left;">Both Good.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Meta Desc</strong></td>
+<td style="text-align: left;">✅ Present</td>
+<td style="text-align: left;">✅ Present</td>
+<td style="text-align: left;">Both Good.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Canonical</strong></td>
+<td style="text-align: left;">✅ Correct</td>
+<td style="text-align: left;">✅ Correct</td>
+<td style="text-align: left;">Both Good.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Image Alt</strong></td>
+<td style="text-align: left;">✅ Present</td>
+<td style="text-align: left;">❌ <strong>Missing</strong></td>
+<td style="text-align: left;">🔴 <strong>SEO &amp; Access. Penalty</strong></td>
+</tr>
+</tbody>
+</table>
+<h2>Key Findings</h2>
+<h3>Critical Issues (Modern Platform)</h3>
+<ol>
+<li>Sitemaps exist but not linked in robots.txt (<code>/content/BBS_google_sitemap_indexV2.xml</code>, <code>/content/SBS_google_sitemap_indexV2.xml</code>)</li>
+<li>Missing alt text on informational graphics (trust signals, UI elements) and no aria-label fallback</li>
+<li>Robots.txt blocks faceted search but lacks discoverable sitemap</li>
+</ol>
+<h3>Legacy Site Strengths</h3>
+<ul>
+<li>Mature SEO setup: proper sitemap, alt text, consistent meta data</li>
+</ul>
+<h2>Recommendations</h2>
+<ol>
+<li>Generate XML sitemap and link in robots.txt</li>
+<li>Automate alt text from product names</li>
+<li>Monitor GSC for indexing issues</li>
+</ol>
+</section>
+<section id="08-geo-audit" class="assessment-section">
+<h1>GEO (Generative Engine Optimization) Audit</h1>
+<h2>Summary</h2>
+<p><strong>playbaseball.com</strong> provides clear hierarchical content and accessible Schema markup. <strong>tgw.com</strong> has limited AI crawler visibility due to CSR and missing heading structures.</p>
+<h2>Comparative Analysis</h2>
+<h3>1. LLM Readability</h3>
+<p>LLMs require clear heading hierarchies (H1 -&gt; H2 -&gt; H3) and high text density.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Metric</th>
+<th style="text-align: left;">tgw.com (Legacy)</th>
+<th style="text-align: left;">playbaseball.com (Modern)</th>
+<th style="text-align: left;">Advantage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Home Structure</strong></td>
+<td style="text-align: left;">❌ 0 H1s / 0 H2s (Empty)</td>
+<td style="text-align: left;">✅ <strong>1 H1 / 15 H2s</strong></td>
+<td style="text-align: left;">Modern</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PLP Structure</strong></td>
+<td style="text-align: left;">❌ 0 H1s / 0 H2s</td>
+<td style="text-align: left;">✅ <strong>1 H1 / 6 H2s</strong></td>
+<td style="text-align: left;">Modern</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PDP Structure</strong></td>
+<td style="text-align: left;">❌ 0 H1s / 0 H2s</td>
+<td style="text-align: left;">✅ <strong>1 H1 / 7 H2s</strong></td>
+<td style="text-align: left;">Modern</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Text Density</strong></td>
+<td style="text-align: left;">⚠️ Low (~0.8%)</td>
+<td style="text-align: left;">✅ <strong>High (2.4% - 4.7%)</strong></td>
+<td style="text-align: left;">Modern</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>[!IMPORTANT]<br />
+<code>tgw.com</code> appears empty to AI crawlers due to heavy JavaScript rendering. <strong>playbaseball.com</strong> serves structured HTML immediately.</p>
+</blockquote>
+<h3>2. Schema.org Markup</h3>
+<p>Structured data helps LLMs understand entities (products, prices, reviews).</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">tgw.com (Legacy)</th>
+<th style="text-align: left;">playbaseball.com (Modern)</th>
+<th style="text-align: left;">Advantage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Product Schema</strong></td>
+<td style="text-align: left;">⚠️ Present (CSR Only)</td>
+<td style="text-align: left;">✅ <strong>Present (SSR Friendly)</strong></td>
+<td style="text-align: left;">Modern</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Breadcrumbs</strong></td>
+<td style="text-align: left;">✅ Present</td>
+<td style="text-align: left;">❌ Missing/Not Detected</td>
+<td style="text-align: left;">Legacy</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Organization</strong></td>
+<td style="text-align: left;">❌ Missing</td>
+<td style="text-align: left;">❌ Missing</td>
+<td style="text-align: left;">❌ Both Fail</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>[!NOTE]<br />
+Product Schema on <strong>playbaseball.com</strong> is SSR/embedded, ensuring AI agents can read product data without JS.</p>
+</blockquote>
+<h3>3. Brand Authority Signals</h3>
+<p>Signals that help LLMs associate the domain with a trusted entity.</p>
+<ul>
+<li><strong>tgw.com</strong>: Strong legacy footprint. "About Us" and "Contact" pages are easily found, but lack <code>Organization</code> schema.</li>
+<li><strong>playbaseball.com</strong>: Weaker signals. No <code>Organization</code> schema. Social links are present but the brand entity is less defined in the Knowledge Graph.</li>
+</ul>
+<h2>Key Findings</h2>
+<h3>Modern Platform Wins</h3>
+<ol>
+<li>Universal readability: clear H1/H2 structure across all page types</li>
+<li>Accessible Schema: Product Schema visible without JS</li>
+</ol>
+<h3>Legacy Site Failures</h3>
+<ol>
+<li>Requires full browser engine to render structure</li>
+<li>Empty or image-based H1s provide no semantic value</li>
+</ol>
+<h2>Recommendations</h2>
+<ol>
+<li>Add Organization schema to homepage</li>
+<li>Fix PLP H1s to reflect category (e.g., "Baseball Bats")</li>
+<li>Maintain SSR Product Schema implementation</li>
+</ol>
+</section>
+<section id="09-system-inventory" class="assessment-section">
+<h1>System Inventory &amp; Architecture Map</h1>
+<h2>Overview</h2>
+<p>Complete ecosystem mapping for modern (<strong>playbaseball.com</strong>) and legacy (<strong>tgw.com</strong>) platforms.</p>
+<h2>1. Modern Platform (<strong>playbaseball.com</strong>)</h2>
+<p><strong>Architecture Type</strong>: Composable / MACH (Microservices, API-first, Cloud-native, Headless)</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Category</th>
+<th style="text-align: left;">System / Provider</th>
+<th style="text-align: left;">Role &amp; Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Commerce Core</strong></td>
+<td style="text-align: left;"><strong>CommerceTools</strong></td>
+<td style="text-align: left;">The central "brain" for Product Catalog, Cart, Orders, and Customers. Headless backend.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Frontend (Head)</strong></td>
+<td style="text-align: left;"><strong>ASP.NET MVC</strong></td>
+<td style="text-align: left;">Custom application (<code>TsgMvc</code>) serving as the frontend head. Consumes CommerceTools APIs.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Frontend Framework</strong></td>
+<td style="text-align: left;"><strong>AngularJS 1.8.2</strong></td>
+<td style="text-align: left;">Legacy JavaScript framework running on the client-side.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Search &amp; Merch</strong></td>
+<td style="text-align: left;"><strong>Algolia</strong></td>
+<td style="text-align: left;"><strong>Algolia</strong> references (<code>algoliaClick</code>, <code>algoliaclickevent</code>) found in <code>global.js</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Reviews</strong></td>
+<td style="text-align: left;"><strong>Bazaarvoice</strong></td>
+<td style="text-align: left;">Customer ratings and reviews integration.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Tax</strong></td>
+<td style="text-align: left;"><strong>Avalara</strong></td>
+<td style="text-align: left;">Real-time tax calculation at checkout.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Payments</strong></td>
+<td style="text-align: left;"><strong>Adyen</strong></td>
+<td style="text-align: left;">Modern payment gateway and processor.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>CDN / Security</strong></td>
+<td style="text-align: left;"><strong>Cloudflare</strong></td>
+<td style="text-align: left;">Edge caching, WAF, and bot protection.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Hosting</strong></td>
+<td style="text-align: left;"><strong>Azure</strong> (Implied)</td>
+<td style="text-align: left;">Hosting environment for the ASP.NET MVC application.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Analytics</strong></td>
+<td style="text-align: left;"><strong>Google Analytics 4</strong></td>
+<td style="text-align: left;">Web analytics and tracking.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Marketing</strong></td>
+<td style="text-align: left;"><strong>Meta Pixel</strong></td>
+<td style="text-align: left;">Social advertising tracking.</td>
+</tr>
+</tbody>
+</table>
+<h2>2. Legacy Platform (<strong>tgw.com</strong>)</h2>
+<p><strong>Architecture Type</strong>: Monolithic</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Category</th>
+<th style="text-align: left;">System / Provider</th>
+<th style="text-align: left;">Role &amp; Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Commerce Core</strong></td>
+<td style="text-align: left;"><strong>IBM WebSphere Commerce</strong></td>
+<td style="text-align: left;">All-in-one legacy monolith (Catalog, Cart, Orders, Frontend).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Frontend</strong></td>
+<td style="text-align: left;"><strong>Dojo Toolkit</strong></td>
+<td style="text-align: left;">Legacy JavaScript library bundled with WebSphere themes.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Search</strong></td>
+<td style="text-align: left;"><strong>Endeca</strong></td>
+<td style="text-align: left;">Legacy Oracle search engine (known for high maintenance).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Reviews</strong></td>
+<td style="text-align: left;"><strong>PowerReviews</strong></td>
+<td style="text-align: left;">Legacy review platform (different from the modern site).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Payments</strong></td>
+<td style="text-align: left;"><strong>Cybersource</strong></td>
+<td style="text-align: left;">Legacy payment gateway.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>CDN</strong></td>
+<td style="text-align: left;"><strong>Akamai</strong></td>
+<td style="text-align: left;">Legacy CDN provider.</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Key Integration Differences</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">Legacy</th>
+<th style="text-align: left;">Modern</th>
+<th style="text-align: left;">Shift</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Search</strong></td>
+<td style="text-align: left;">Endeca</td>
+<td style="text-align: left;">Algolia</td>
+<td style="text-align: left;">SaaS-based search</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Reviews</strong></td>
+<td style="text-align: left;">PowerReviews</td>
+<td style="text-align: left;">Bazaarvoice</td>
+<td style="text-align: left;">Market leader consolidation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Payments</strong></td>
+<td style="text-align: left;">Cybersource</td>
+<td style="text-align: left;">Adyen</td>
+<td style="text-align: left;">Modern APIs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>CDN</strong></td>
+<td style="text-align: left;">Akamai</td>
+<td style="text-align: left;">Cloudflare</td>
+<td style="text-align: left;">Modern edge network</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Data Flow</h2>
+<ul>
+<li><strong>BFF Pattern</strong>: ASP.NET MVC proxies between AngularJS and CommerceTools, securing API keys</li>
+<li><strong>Shared Services</strong>: <strong>playbaseball.com</strong> and <code>playsoftball.playbaseball.com</code> share CommerceTools project, enabling shared cart</li>
+</ul>
+</section>
+<section id="10-mobile-audit" class="assessment-section">
+<h1>Mobile Experience Audit: playbaseball.com</h1>
+<h2>Summary</h2>
+<p>Mobile experience is functional but desktop-first. Core navigation works; menu interactions and visual hierarchy need improvement.</p>
+<h2>1. Homepage</h2>
+<p><img alt="Mobile Homepage Top" src="images/mobile_home_top_1764699533193.png" /><br />
+*   Compact sticky header with clear icons<br />
+*   Hamburger menu feels sluggish/unresponsive<br />
+    *   <img alt="Mobile Menu" src="images/mobile_menu_open_1764699565405.png" /></p>
+<h2>2. Product Discovery (PLP)</h2>
+<p><img alt="Mobile PLP" src="images/mobile_plp_gloves_search_1764699700171.png" /><br />
+*   2-column grid layout<br />
+*   Product images adequate<br />
+*   Touch target sizes need verification</p>
+<h2>3. Product Details (PDP)</h2>
+<p><img alt="Mobile PDP" src="images/mobile_pdp_gloves_1764699732015.png" /><br />
+*   Clear visual hierarchy<br />
+*   Add to Cart should be sticky at bottom</p>
+<h2>Key Issues</h2>
+<ol>
+<li>Menu implementation is heavy/brittle</li>
+<li>Heavy JS execution degrades mobile experience</li>
+<li>Search prominence is good fallback</li>
+</ol>
+<h2>Recommendations</h2>
+<ol>
+<li>Simplify menu: use semantic HTML and CSS transitions</li>
+<li>Ensure 44x44px minimum touch targets</li>
+<li>Add sticky Add to Cart on PDP</li>
+</ol>
+</section>
+<section id="11-competitor-benchmark" class="assessment-section">
+<h1>Competitor Benchmarking: playbaseball.com</h1>
+<h2>Summary</h2>
+<p><strong>playbaseball.com</strong> has a modern backend but lags behind industry leaders (Dick's, Golf Galaxy) in search UX and visual polish. Sportsman's Guide offers a better search experience.</p>
+<h2>Competitor Matrix</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">playbaseball.com</th>
+<th style="text-align: left;">Dick's Sporting Goods</th>
+<th style="text-align: left;">Golf Galaxy</th>
+<th style="text-align: left;">Baseball Express</th>
+<th style="text-align: left;">Sportsman's Guide</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Sticky Header</strong></td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">✅ Yes (Robust)</td>
+<td style="text-align: left;">✅ Yes (Robust)</td>
+<td style="text-align: left;">✅ Yes</td>
+<td style="text-align: left;">✅ Yes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Search Experience</strong></td>
+<td style="text-align: left;">Basic Autosuggest</td>
+<td style="text-align: left;">🌟 <strong>Rich Autosuggest</strong> (Images + Categories)</td>
+<td style="text-align: left;">🌟 <strong>Rich Autosuggest</strong> (Images + Categories)</td>
+<td style="text-align: left;">Basic (Text Only)</td>
+<td style="text-align: left;">Good (Text + Categories)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Cart Prominence</strong></td>
+<td style="text-align: left;">High (Icon)</td>
+<td style="text-align: left;">High (Icon + Count)</td>
+<td style="text-align: left;">High (Icon + Count)</td>
+<td style="text-align: left;">Medium (Icon)</td>
+<td style="text-align: left;">High (Icon + Count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Mobile UX</strong></td>
+<td style="text-align: left;">"Desktop-First" Feel</td>
+<td style="text-align: left;"><strong>Mobile-Optimized</strong></td>
+<td style="text-align: left;"><strong>Mobile-Optimized</strong></td>
+<td style="text-align: left;">Standard</td>
+<td style="text-align: left;">Standard</td>
+</tr>
+</tbody>
+</table>
+<h2>Detailed Analysis</h2>
+<h3>1. Dick's Sporting Goods</h3>
+<p><img alt="Dick's Autosuggest" src="images/dicks_autosuggest_1764700122792.png" /><br />
+*   Rich autosuggest with categories, product images, and suggestions<br />
+*   <strong>playbaseball.com</strong> lacks this visual richness</p>
+<h3>2. Golf Galaxy</h3>
+<p><img alt="Golf Galaxy Autosuggest" src="images/golfgalaxy_autosuggest_1764700146992.png" /><br />
+*   Matches Dick's performance</p>
+<h3>3. Baseball Express</h3>
+<p><img alt="Baseball Express Autosuggest" src="images/baseballexpress_autosuggest_1764700295865.png" /><br />
+*   Similar to <strong>playbaseball.com</strong> current state<br />
+*   Text-only search requires extra click</p>
+<h3>4. Sportsman's Guide</h3>
+<p><img alt="Sportsman's Guide Autosuggest" src="images/sportsmansguide_autosuggest_1764700505826.png" /><br />
+*   Better search than <strong>playbaseball.com</strong> with category segmentation<br />
+*   Heavy overlay usage creates friction</p>
+<h2>Core Web Vitals (Mobile)</h2>
+<p><em>CrUX data, last 28 days</em></p>
+<h3>Golf Sector Benchmarks</h3>
+<p><strong>Product Listing Pages (PLP)</strong><br />
+<em>Category: Golf Clubs</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Competitor</th>
+<th style="text-align: left;">LCP (Loading)</th>
+<th style="text-align: left;">INP (Interactivity)</th>
+<th style="text-align: left;">CLS (Stability)</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Dick's Sporting Goods</strong></td>
+<td style="text-align: left;"><strong>1.2 s</strong> (Fast)</td>
+<td style="text-align: left;">152 ms</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">🟢 Excellent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Golf Galaxy</strong></td>
+<td style="text-align: left;">1.7 s (Good)</td>
+<td style="text-align: left;">195 ms</td>
+<td style="text-align: left;">0.05</td>
+<td style="text-align: left;">🟢 Good</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Rock Bottom Golf</strong></td>
+<td style="text-align: left;">2.3 s (Needs Imp.)</td>
+<td style="text-align: left;">145 ms</td>
+<td style="text-align: left;">0.06</td>
+<td style="text-align: left;">🟡 Fair</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Worldwide Golf Shops</strong></td>
+<td style="text-align: left;">2.8 s (Needs Imp.)</td>
+<td style="text-align: left;">120 ms</td>
+<td style="text-align: left;">0.19</td>
+<td style="text-align: left;">🟡 Fair</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>TGW.com (Legacy)</strong></td>
+<td style="text-align: left;"><strong>3.4 s</strong> (Poor)</td>
+<td style="text-align: left;"><strong>202 ms</strong> (Poor)</td>
+<td style="text-align: left;"><strong>0.04</strong></td>
+<td style="text-align: left;">🔴 Lagging</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Product Detail Pages (PDP)</strong><br />
+<em>Category: Drivers</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Competitor</th>
+<th style="text-align: left;">LCP (Loading)</th>
+<th style="text-align: left;">INP (Interactivity)</th>
+<th style="text-align: left;">CLS (Stability)</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Dick's Sporting Goods</strong></td>
+<td style="text-align: left;"><strong>1.0 s</strong> (Fast)</td>
+<td style="text-align: left;">120 ms</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">🟢 Excellent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Worldwide Golf Shops</strong></td>
+<td style="text-align: left;">2.2 s (Needs Imp.)</td>
+<td style="text-align: left;">105 ms</td>
+<td style="text-align: left;">0.06</td>
+<td style="text-align: left;">🟡 Fair</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Rock Bottom Golf</strong></td>
+<td style="text-align: left;">2.3 s (Needs Imp.)</td>
+<td style="text-align: left;">145 ms</td>
+<td style="text-align: left;">0.06</td>
+<td style="text-align: left;">🟡 Fair</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>TGW.com (Legacy)</strong></td>
+<td style="text-align: left;">2.8 s (Needs Imp.)</td>
+<td style="text-align: left;">120 ms</td>
+<td style="text-align: left;">0.19</td>
+<td style="text-align: left;">🟡 Fair</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Golf Galaxy</strong></td>
+<td style="text-align: left;">3.0 s (Needs Imp.)</td>
+<td style="text-align: left;">244 ms</td>
+<td style="text-align: left;">0.12</td>
+<td style="text-align: left;">🔴 Poor</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key Takeaway:</strong> TGW is 3x slower than Dick's on PLPs (3.4s vs 1.2s LCP).</p>
+<h3>Baseball Sector Benchmarks</h3>
+<p><strong>Product Listing Pages (PLP)</strong><br />
+<em>Category: Baseball Bats</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Competitor</th>
+<th style="text-align: left;">LCP (Loading)</th>
+<th style="text-align: left;">INP (Interactivity)</th>
+<th style="text-align: left;">CLS (Stability)</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Better Baseball</strong></td>
+<td style="text-align: left;"><strong>2.0 s</strong> (Good)</td>
+<td style="text-align: left;">149 ms</td>
+<td style="text-align: left;">0.09</td>
+<td style="text-align: left;">🟢 Good</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PlayBaseball.com</strong></td>
+<td style="text-align: left;">2.2 s (Needs Imp.)</td>
+<td style="text-align: left;"><strong>105 ms</strong> (Good)</td>
+<td style="text-align: left;">0.06</td>
+<td style="text-align: left;">🟡 Fair</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Baseball Monkey</strong></td>
+<td style="text-align: left;">3.1 s (Poor)</td>
+<td style="text-align: left;">145 ms</td>
+<td style="text-align: left;">0.02</td>
+<td style="text-align: left;">🔴 Poor</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Product Detail Pages (PDP)</strong><br />
+<em>Category: Bats</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Competitor</th>
+<th style="text-align: left;">LCP (Loading)</th>
+<th style="text-align: left;">INP (Interactivity)</th>
+<th style="text-align: left;">CLS (Stability)</th>
+<th style="text-align: left;">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Better Baseball</strong></td>
+<td style="text-align: left;"><strong>1.8 s</strong> (Good)</td>
+<td style="text-align: left;">108 ms</td>
+<td style="text-align: left;">0.20</td>
+<td style="text-align: left;">🟢 Good</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PlayBaseball.com</strong></td>
+<td style="text-align: left;">3.0 s (Needs Imp.)</td>
+<td style="text-align: left;">188 ms</td>
+<td style="text-align: left;"><strong>0.35</strong></td>
+<td style="text-align: left;">🔴 Poor Stability</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key Takeaway:</strong> <strong>playbaseball.com</strong> has best-in-class interactivity (105ms INP) but poor CLS on PDPs (0.35). Better Baseball leads in speed (1.8s LCP).</p>
+<h2>Recommendations</h2>
+<ol>
+<li>Upgrade search UI to rich autosuggest (product thumbnails, category shortcuts)</li>
+<li>Improve mobile navigation to match Dick's app-like feel</li>
+</ol>
+</section>
+    </div>
+
+    <script>
+        // Password Protection
+        const PASSWORD_HASH = 'aeb448b7755c097704094164f32e0921cf173d85d1c9a3204b6c3a545a36e5cf';
+        const AUTH_KEY = 'assessment_auth';
+
+        async function hashPassword(password) {
+            if (!window.crypto || !window.crypto.subtle) {
+                throw new Error('Web Crypto API not available');
+            }
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function checkPassword() {
+            const input = document.getElementById('passwordInput');
+            const error = document.getElementById('passwordError');
+            const password = input.value;
+
+            if (!password) {
+                error.style.display = 'block';
+                return;
+            }
+
+            try {
+                const hash = await hashPassword(password);
+                
+                if (hash === PASSWORD_HASH) {
+                    sessionStorage.setItem(AUTH_KEY, 'true');
+                    document.body.classList.remove('locked');
+                    document.getElementById('passwordOverlay').style.display = 'none';
+                    initializeDocument();
+                } else {
+                    error.style.display = 'block';
+                    input.value = '';
+                    input.focus();
+                }
+            } catch (e) {
+                error.textContent = 'Error: ' + e.message;
+                error.style.display = 'block';
+            }
+        }
+
+        // Check if already authenticated
+        if (sessionStorage.getItem(AUTH_KEY) === 'true') {
+            document.body.classList.remove('locked');
+            document.getElementById('passwordOverlay').style.display = 'none';
+            initializeDocument();
+        } else {
+            // Allow Enter key to submit password
+            document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkPassword();
+                }
+            });
+        }
+
+        // Build Table of Contents
+        let tocLinks = [];
+        let headings = [];
+
+        function buildTOC() {
+            const tocList = document.getElementById('tocList');
+            headings = Array.from(document.querySelectorAll('.main-content h1, .main-content h2, .main-content h3, .main-content h4, .main-content h5, .main-content h6'));
+            
+            headings.forEach((heading, index) => {
+                // Generate anchor ID if not present
+                if (!heading.id) {
+                    const text = heading.textContent.trim();
+                    const anchor = text.toLowerCase()
+                        .replace(/[^\w\s-]/g, '')
+                        .replace(/[-\s]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                    heading.id = anchor || `heading-${index}`;
+                }
+                
+                // Create TOC item
+                const li = document.createElement('li');
+                const level = parseInt(heading.tagName.charAt(1));
+                li.className = `toc-item level-${level}`;
+                
+                const a = document.createElement('a');
+                a.href = `#${heading.id}`;
+                a.className = 'toc-link';
+                a.textContent = heading.textContent.trim();
+                a.dataset.headingId = heading.id;
+                
+                // Add click handler
+                a.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+                
+                li.appendChild(a);
+                tocList.appendChild(li);
+                tocLinks.push({ link: a, heading: heading });
+            });
+
+            // Setup scroll highlighting
+            setupScrollHighlighting();
+        }
+
+        function setupScrollHighlighting() {
+            // Use Intersection Observer for better performance
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -70% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Remove active from all links
+                        tocLinks.forEach(item => {
+                            item.link.classList.remove('active');
+                        });
+                        
+                        // Add active to corresponding link
+                        const activeLink = tocLinks.find(item => item.heading.id === entry.target.id);
+                        if (activeLink) {
+                            activeLink.link.classList.add('active');
+                            
+                            // Scroll TOC to show active item if needed
+                            const tocSidebar = document.querySelector('.toc-sidebar');
+                            const linkRect = activeLink.link.getBoundingClientRect();
+                            const sidebarRect = tocSidebar.getBoundingClientRect();
+                            
+                            if (linkRect.top < sidebarRect.top || linkRect.bottom > sidebarRect.bottom) {
+                                activeLink.link.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                            }
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all headings
+            headings.forEach(heading => {
+                observer.observe(heading);
+            });
+
+            // Fallback: also handle scroll event for edge cases
+            let scrollTimeout;
+            window.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    updateActiveTOC();
+                }, 100);
+            });
+        }
+
+        function updateActiveTOC() {
+            const scrollPosition = window.scrollY + 150; // Offset for header
+            
+            let activeHeading = null;
+            for (let i = headings.length - 1; i >= 0; i--) {
+                const heading = headings[i];
+                const headingTop = heading.getBoundingClientRect().top + window.scrollY;
+                
+                if (headingTop <= scrollPosition) {
+                    activeHeading = heading;
+                    break;
+                }
+            }
+
+            // Update active state
+            tocLinks.forEach(item => {
+                item.link.classList.remove('active');
+            });
+
+            if (activeHeading) {
+                const activeLink = tocLinks.find(item => item.heading.id === activeHeading.id);
+                if (activeLink) {
+                    activeLink.link.classList.add('active');
+                }
+            }
+        }
+
+        function initializeDocument() {
+            buildTOC();
+        }
+    </script>
+</body>
+</html>
+
