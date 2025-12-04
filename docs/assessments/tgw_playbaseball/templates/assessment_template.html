@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Assessment: TGW & PlayBaseball</title>
+    <style>
+        /* Arcadia Digital Brand Colors */
+        :root {
+            --arcadia-green: #2d5016;
+            --arcadia-green-light: #4a7c2a;
+            --arcadia-green-dark: #1a3009;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --border-color: #e0e0e0;
+            --highlight: #fff9c4;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Fonts - Piazzolla/Figtree with fallbacks */
+        @import url('https://fonts.googleapis.com/css2?family=Piazzolla:ital,wght@0,400;0,500;0,700;1,400&family=Figtree:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            font-size: 16px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Piazzolla', Georgia, serif;
+            font-weight: 700;
+            margin-top: 2em;
+            margin-bottom: 1em;
+            color: var(--arcadia-green-dark);
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            border-bottom: 3px solid var(--arcadia-green);
+            padding-bottom: 0.5em;
+        }
+
+        h2 {
+            font-size: 2em;
+            border-bottom: 2px solid var(--arcadia-green-light);
+            padding-bottom: 0.3em;
+        }
+
+        h3 {
+            font-size: 1.5em;
+        }
+
+        h4 {
+            font-size: 1.25em;
+        }
+
+        /* Password Modal */
+        .password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+
+        .password-modal {
+            background: white;
+            padding: 3em;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .password-modal h2 {
+            font-size: 1.5em;
+            margin-top: 0;
+            margin-bottom: 1em;
+            border: none;
+            padding: 0;
+            color: var(--arcadia-green);
+        }
+
+        .password-modal input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 1em;
+            font-family: inherit;
+        }
+
+        .password-modal input:focus {
+            outline: none;
+            border-color: var(--arcadia-green);
+        }
+
+        .password-modal button {
+            background: var(--arcadia-green);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .password-modal button:hover {
+            background: var(--arcadia-green-light);
+        }
+
+        .password-error {
+            color: #d32f2f;
+            margin-top: 0.5em;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            background: white;
+            border-bottom: 2px solid var(--arcadia-green);
+            padding: 1em 2em;
+            z-index: 1000;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            margin: 0;
+            border: none;
+            padding: 0;
+        }
+
+        /* Table of Contents */
+        .toc-sidebar {
+            position: fixed;
+            left: 0;
+            top: 80px;
+            width: 250px;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5em 1em;
+            z-index: 100;
+        }
+
+        .toc-title {
+            font-family: 'Piazzolla', serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--arcadia-green);
+            margin-bottom: 1em;
+            padding-bottom: 0.5em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-item {
+            margin-bottom: 0.5em;
+        }
+
+        .toc-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: block;
+            padding: 0.4em 0.6em;
+            border-radius: 4px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+
+        .toc-link:hover {
+            background: var(--arcadia-green-light);
+            color: white;
+        }
+
+        .toc-link.active {
+            background: rgba(45, 80, 22, 0.1);
+            border-left-color: var(--arcadia-green);
+            color: var(--arcadia-green-dark);
+            font-weight: 600;
+        }
+
+        .toc-item.level-1 .toc-link {
+            font-weight: 600;
+            padding-left: 0.6em;
+        }
+
+        .toc-item.level-2 .toc-link {
+            padding-left: 1.2em;
+            font-size: 0.85em;
+        }
+
+        .toc-item.level-3 .toc-link {
+            padding-left: 1.8em;
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+
+        .toc-item.level-3 .toc-link.active {
+            color: var(--arcadia-green-dark);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 2em 3em;
+            max-width: 1200px;
+        }
+
+        .assessment-section {
+            margin-bottom: 4em;
+        }
+
+
+        /* Typography */
+        p {
+            margin-bottom: 1.2em;
+        }
+
+        ul, ol {
+            margin-bottom: 1.2em;
+            padding-left: 2em;
+        }
+
+        li {
+            margin-bottom: 0.5em;
+        }
+
+        blockquote {
+            border-left: 4px solid var(--arcadia-green);
+            padding-left: 1.5em;
+            margin: 1.5em 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        code {
+            background: var(--bg-secondary);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: var(--bg-secondary);
+            padding: 1.5em;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 1.5em 0;
+            border-left: 4px solid var(--arcadia-green);
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        th {
+            background: var(--arcadia-green);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        tr:hover {
+            background: #f0f0f0;
+        }
+
+        /* Images */
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px var(--shadow);
+            margin: 1.5em 0;
+        }
+
+        /* Links */
+        a {
+            color: var(--arcadia-green);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        a:hover {
+            border-bottom-color: var(--arcadia-green);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1.5em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            h2 {
+                font-size: 1.5em;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .password-overlay,
+            .password-modal,
+            .header,
+            .toc-sidebar {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 0;
+            }
+
+            body {
+                font-size: 12pt;
+            }
+
+            h1, h2, h3 {
+                page-break-after: avoid;
+            }
+
+            .assessment-section {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Hidden content until authenticated */
+        body.locked .main-content,
+        body.locked .header,
+        body.locked .toc-sidebar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="locked">
+    <!-- Password Modal -->
+    <div class="password-overlay" id="passwordOverlay">
+        <div class="password-modal">
+            <h2>Assessment Document</h2>
+            <p style="margin-bottom: 1.5em; color: var(--text-secondary);">Password required</p>
+            <input type="password" id="passwordInput" placeholder="Enter password" autofocus>
+            <div class="password-error" id="passwordError">Incorrect password</div>
+            <button onclick="checkPassword()">Access</button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1>Digital Assessment</h1>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="toc-sidebar">
+        <div class="toc-title">Contents</div>
+        <ul class="toc-list" id="tocList"></ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        {{CONTENT}}
+    </div>
+
+    <script>
+        // Password Protection
+        const PASSWORD_HASH = '{{PASSWORD_HASH}}';
+        const AUTH_KEY = 'assessment_auth';
+
+        async function hashPassword(password) {
+            if (!window.crypto || !window.crypto.subtle) {
+                throw new Error('Web Crypto API not available');
+            }
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function checkPassword() {
+            const input = document.getElementById('passwordInput');
+            const error = document.getElementById('passwordError');
+            const password = input.value;
+
+            if (!password) {
+                error.style.display = 'block';
+                return;
+            }
+
+            try {
+                const hash = await hashPassword(password);
+                
+                if (hash === PASSWORD_HASH) {
+                    sessionStorage.setItem(AUTH_KEY, 'true');
+                    document.body.classList.remove('locked');
+                    document.getElementById('passwordOverlay').style.display = 'none';
+                    initializeDocument();
+                } else {
+                    error.style.display = 'block';
+                    input.value = '';
+                    input.focus();
+                }
+            } catch (e) {
+                error.textContent = 'Error: ' + e.message;
+                error.style.display = 'block';
+            }
+        }
+
+        // Check if already authenticated
+        if (sessionStorage.getItem(AUTH_KEY) === 'true') {
+            document.body.classList.remove('locked');
+            document.getElementById('passwordOverlay').style.display = 'none';
+            initializeDocument();
+        } else {
+            // Allow Enter key to submit password
+            document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkPassword();
+                }
+            });
+        }
+
+        // Build Table of Contents
+        let tocLinks = [];
+        let headings = [];
+
+        function buildTOC() {
+            const tocList = document.getElementById('tocList');
+            headings = Array.from(document.querySelectorAll('.main-content h1, .main-content h2, .main-content h3, .main-content h4, .main-content h5, .main-content h6'));
+            
+            headings.forEach((heading, index) => {
+                // Generate anchor ID if not present
+                if (!heading.id) {
+                    const text = heading.textContent.trim();
+                    const anchor = text.toLowerCase()
+                        .replace(/[^\w\s-]/g, '')
+                        .replace(/[-\s]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                    heading.id = anchor || `heading-${index}`;
+                }
+                
+                // Create TOC item
+                const li = document.createElement('li');
+                const level = parseInt(heading.tagName.charAt(1));
+                li.className = `toc-item level-${level}`;
+                
+                const a = document.createElement('a');
+                a.href = `#${heading.id}`;
+                a.className = 'toc-link';
+                a.textContent = heading.textContent.trim();
+                a.dataset.headingId = heading.id;
+                
+                // Add click handler
+                a.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+                
+                li.appendChild(a);
+                tocList.appendChild(li);
+                tocLinks.push({ link: a, heading: heading });
+            });
+
+            // Setup scroll highlighting
+            setupScrollHighlighting();
+        }
+
+        function setupScrollHighlighting() {
+            // Use Intersection Observer for better performance
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -70% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Remove active from all links
+                        tocLinks.forEach(item => {
+                            item.link.classList.remove('active');
+                        });
+                        
+                        // Add active to corresponding link
+                        const activeLink = tocLinks.find(item => item.heading.id === entry.target.id);
+                        if (activeLink) {
+                            activeLink.link.classList.add('active');
+                            
+                            // Scroll TOC to show active item if needed
+                            const tocSidebar = document.querySelector('.toc-sidebar');
+                            const linkRect = activeLink.link.getBoundingClientRect();
+                            const sidebarRect = tocSidebar.getBoundingClientRect();
+                            
+                            if (linkRect.top < sidebarRect.top || linkRect.bottom > sidebarRect.bottom) {
+                                activeLink.link.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                            }
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all headings
+            headings.forEach(heading => {
+                observer.observe(heading);
+            });
+
+            // Fallback: also handle scroll event for edge cases
+            let scrollTimeout;
+            window.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    updateActiveTOC();
+                }, 100);
+            });
+        }
+
+        function updateActiveTOC() {
+            const scrollPosition = window.scrollY + 150; // Offset for header
+            
+            let activeHeading = null;
+            for (let i = headings.length - 1; i >= 0; i--) {
+                const heading = headings[i];
+                const headingTop = heading.getBoundingClientRect().top + window.scrollY;
+                
+                if (headingTop <= scrollPosition) {
+                    activeHeading = heading;
+                    break;
+                }
+            }
+
+            // Update active state
+            tocLinks.forEach(item => {
+                item.link.classList.remove('active');
+            });
+
+            if (activeHeading) {
+                const activeLink = tocLinks.find(item => item.heading.id === activeHeading.id);
+                if (activeLink) {
+                    activeLink.link.classList.add('active');
+                }
+            }
+        }
+
+        function initializeDocument() {
+            buildTOC();
+        }
+    </script>
+</body>
+</html>
+

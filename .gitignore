@@ -1,0 +1,34 @@
+# Generated assessment files
+docs/assessments/tgw_playbaseball/assessment.html
+docs/assessments/tgw_playbaseball/assessment.pdf
+
+# Password configuration (optional - uncomment if you want to exclude)
+# docs/assessments/tgw_playbaseball/config.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+**/.DS_Store
+
+# Audit data files (temporary)
+*.json
+!package.json
+!package-lock.json
+
